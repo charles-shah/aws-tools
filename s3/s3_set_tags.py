@@ -30,15 +30,15 @@ def parse_args():
     (options,args) = parser.parse_args()
 
     if not options.key and not options.filename:
-        print "Expects --key or --filename"
+        print("Expects --key or --filename")
         sys.exit(-1)
 
     if not options.bucket:
-        print "Bucket name required "
+        print("Bucket name required ")
         sys.exit(-1)
 
     if not options.tags:
-        print "Tags json is required"
+        print("Tags json is required")
         sys.exit(-1)
 
     return (options, args)
@@ -47,7 +47,9 @@ def set_tags(options):
 
     aws_key = os.getenv("AWS_ACCESS_KEY_ID")
     aws_secret = os.getenv("AWS_SECRET_ACCESS_KEY")
-
+    if not aws_key or not aws_secret:
+        print("AWS credentials not found")
+        sys.exit(-1)
     session = Session(aws_access_key_id=aws_key, aws_secret_access_key=aws_secret)
     client = session.client('s3')
 
@@ -58,7 +60,7 @@ def set_tags(options):
         with open(options.filename, 'r') as f:
             contents = f.readlines()
             for line in contents:
-                print line.strip()
+                print(line.strip())
                 set_tag_one_object(client=client, bucket=options.bucket, key=line.strip(),
                                verbose=options.verbose, tags_str=options.tags)
 
@@ -77,9 +79,9 @@ def set_tag_one_object(client, bucket, key, verbose, tags_str):
 
 
         if verbose:
-            print key,
+            print(key, end=",")
             if current_tagset:
-                print " current tags: " + str(current_tagset)
+                print(" current tags: " + str(current_tagset))
 
         tags_dict = json.loads(tags_str)
         current_tagset.append(tags_dict)
@@ -93,10 +95,10 @@ def set_tag_one_object(client, bucket, key, verbose, tags_str):
         )
         if verbose:
             if response.get("ResponseMetadata",{}).get("HTTPStatusCode") == 200:
-                print "Success " + key
+                print("Success " + key)
 
     except Exception as e:
-        print "Exception " + str(e)
+        print("Exception " + str(e))
 
 
 if __name__ == "__main__":
